@@ -1,14 +1,12 @@
 <script setup>
 import axios from 'axios';
 import { ref, onMounted, reactive } from 'vue';
+import { Form, Field } from 'vee-validate';
+import * as yup from 'yup';
 
 const users = ref([]);
 
-const form = reactive({
-    name: '',
-    email: '',
-    password: ''
-});
+const editing = ref(false);
 
 const getUsers = () => {
     axios.get('/api/users')
@@ -18,19 +16,30 @@ const getUsers = () => {
         });
 };
 
-const createUser = () => {
+const schema = yup.object({
+    name: yup.string().required(),
+    email: yup.string().email().required(),
+    password: yup.string().required().min(8),
+})
 
-    axios.post('/api/users', form)
+const createUser = (values, { resetForm }) => {
+
+    axios.post('/api/users', values)
         .then((response) => {
             users.value.unshift(response.data);
-            form.name = '',
-                form.email = '',
-                form.password = '',
-
-                $('#createUserModal').modal('hide');
+            $('#userFormModal').modal('hide');
+            resetForm();
 
         });
+};
 
+const editUser = () => {
+    editing.value = true;
+    $('#userFormModal').modal('show');
+};
+const addUser = () => {
+    editing.value = false;
+    $('#userFormModal').modal('show');
 }
 
 onMounted(() => {
@@ -62,7 +71,7 @@ onMounted(() => {
         <div class="content">
             <div class="container-fluid">
                 <div class="add_user_btn">
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createUserModal">Add New
+                    <button @click="addUser" type="button" class="btn btn-primary">Add New
                         User</button>
                 </div>
                 <table class="table">
@@ -83,7 +92,9 @@ onMounted(() => {
                             <td>{{ user.email }}</td>
                             <td>12 aug,2023</td>
                             <td></td>
-                            <td></td>
+                            <td>
+                                <a href="#" @click.prevent="editUser(user)"><i class="fa fa-edit"></i></a>
+                            </td>
                         </tr>
 
 
@@ -100,30 +111,40 @@ onMounted(() => {
 
 
     <!-- Modal -->
-    <div class="modal fade" id="createUserModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    <div class="modal fade" id="userFormModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Add a new User</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">
+                        <span v-if="editing">Edit User</span>
+                        <span v-else>Add a new User</span>
+                    </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <form action="">
+                <Form @submit="createUser" :validation-schema="schema" v-slot="{ errors }">
+                    <div class="modal-body">
+
                         <label for="name">Name</label>
-                        <input v-model="form.name" type="name" class="form-control" placeholder="Enter Full Name">
+                        <Field name="name" type="name" :class="{ 'is-invalid': errors.name }" class="form-control"
+                            placeholder="Enter Full Name" />
+                        <span class="invalid-feedback">{{ errors.name }}</span><br>
                         <label for="email">Email</label>
-                        <input v-model="form.email" type="email" class="form-control" placeholder="Enter User Email">
+                        <Field name="email" type="email" :class="{ 'is-invalid': errors.email }" class="form-control"
+                            placeholder="Enter User Email" />
+                        <span class="invalid-feedback">{{ errors.email }}</span><br>
                         <label for="password">Password</label>
-                        <input v-model="form.password" type="password" class="form-control" placeholder="Enter Password">
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button @click="createUser" type="button" class="btn btn-primary">Save</button>
-                </div>
+                        <Field name="password" type="password" :class="{ 'is-invalid': errors.password }"
+                            class="form-control" placeholder="Enter Password" />
+                        <span class="invalid-feedback">{{ errors.password }}</span><br>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </Form>
             </div>
         </div>
     </div>
