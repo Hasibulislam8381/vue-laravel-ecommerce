@@ -7,6 +7,10 @@ import * as yup from 'yup';
 const users = ref([]);
 
 const editing = ref(false);
+const formValues = ref({});
+
+const form = ref(null);
+
 
 const getUsers = () => {
     axios.get('/api/users')
@@ -20,7 +24,15 @@ const schema = yup.object({
     name: yup.string().required(),
     email: yup.string().email().required(),
     password: yup.string().required().min(8),
-})
+});
+const editschema = yup.object({
+    name: yup.string().required(),
+    email: yup.string().email().required(),
+    password: yup.string().when((password, schema) => {
+        return password ? schema.required().min(8) : schema;
+    }),
+
+});
 
 const createUser = (values, { resetForm }) => {
 
@@ -33,13 +45,45 @@ const createUser = (values, { resetForm }) => {
         });
 };
 
-const editUser = () => {
-    editing.value = true;
-    $('#userFormModal').modal('show');
-};
 const addUser = () => {
     editing.value = false;
     $('#userFormModal').modal('show');
+
+};
+
+const editUser = (user) => {
+    editing.value = true;
+    form.value.resetForm();
+    $('#userFormModal').modal('show');
+    formValues.value = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+    };
+    console.log(formValues.value); // Add this line
+};
+
+const updateUser = (values) => {
+    axios.put('/api/users/' + formValues.value.id, values)
+        .then((response) => {
+            const index = users.value.findIndex(user => user.id === response.data.id);
+            users.value[index] = response.data;
+            $('#userFormModal').modal('hide');
+        })
+        .catch((error) => {
+            console.log(error);
+        })
+        .finally(() => {
+            form.value.resetForm();
+        });
+}
+const handleSubmit = (values) => {
+    if (editing.value) {
+        updateUser(values);
+    }
+    else {
+        createUser(values);
+    }
 }
 
 onMounted(() => {
@@ -118,27 +162,34 @@ onMounted(() => {
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">
                         <span v-if="editing">Edit User</span>
-                        <span v-else>Add a new User</span>
+                        <span v-else>Add new User</span>
                     </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <Form @submit="createUser" :validation-schema="schema" v-slot="{ errors }">
+                <Form ref="form" @submit="handleSubmit" :validation-schema="editing ? editschema : schema"
+                    v-slot="{ errors }">
                     <div class="modal-body">
-
-                        <label for="name">Name</label>
-                        <Field name="name" type="name" :class="{ 'is-invalid': errors.name }" class="form-control"
-                            placeholder="Enter Full Name" />
-                        <span class="invalid-feedback">{{ errors.name }}</span><br>
-                        <label for="email">Email</label>
-                        <Field name="email" type="email" :class="{ 'is-invalid': errors.email }" class="form-control"
-                            placeholder="Enter User Email" />
-                        <span class="invalid-feedback">{{ errors.email }}</span><br>
-                        <label for="password">Password</label>
-                        <Field name="password" type="password" :class="{ 'is-invalid': errors.password }"
-                            class="form-control" placeholder="Enter Password" />
-                        <span class="invalid-feedback">{{ errors.password }}</span><br>
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <Field name="name" v-model="formValues.name" type="name" :class="{ 'is-invalid': errors.name }"
+                                class="form-control" placeholder="Enter Full Name" />
+                            <span class="invalid-feedback">{{ errors.name }}</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <Field name="email" v-model="formValues.email" type="email"
+                                :class="{ 'is-invalid': errors.email }" class="form-control"
+                                placeholder="Enter User Email" />
+                            <span class="invalid-feedback">{{ errors.email }}</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <Field name="password" type="password" :class="{ 'is-invalid': errors.password }"
+                                class="form-control" placeholder="Enter Password" />
+                            <span class="invalid-feedback">{{ errors.password }}</span>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
