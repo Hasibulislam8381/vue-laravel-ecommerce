@@ -1,7 +1,7 @@
 <script setup>
 import axios from 'axios';
 import { ref, onMounted, reactive } from 'vue';
-import { Form, Field } from 'vee-validate';
+import { Form, Field, useSetFieldError } from 'vee-validate';
 import * as yup from 'yup';
 
 const users = ref([]);
@@ -34,7 +34,7 @@ const editschema = yup.object({
 
 });
 
-const createUser = (values, { resetForm }) => {
+const createUser = (values, { resetForm, setFieldError }) => {
 
     axios.post('/api/users', values)
         .then((response) => {
@@ -42,7 +42,14 @@ const createUser = (values, { resetForm }) => {
             $('#userFormModal').modal('hide');
             resetForm();
 
-        });
+        })
+
+        .catch((error) => {
+            if (error.response.data.errors) {
+                setFieldError('email', error.response.data.errors.email[0]);
+            }
+
+        })
 };
 
 const addUser = () => {
@@ -63,7 +70,7 @@ const editUser = (user) => {
     console.log(formValues.value); // Add this line
 };
 
-const updateUser = (values) => {
+const updateUser = (values, { setFieldError }) => {
     axios.put('/api/users/' + formValues.value.id, values)
         .then((response) => {
             const index = users.value.findIndex(user => user.id === response.data.id);
@@ -71,18 +78,18 @@ const updateUser = (values) => {
             $('#userFormModal').modal('hide');
         })
         .catch((error) => {
+            setFieldError('email', error.response.data.errors.email[0]);
             console.log(error);
         })
-        .finally(() => {
-            form.value.resetForm();
-        });
+
 }
-const handleSubmit = (values) => {
+const handleSubmit = (values, actions) => {
+
     if (editing.value) {
-        updateUser(values);
+        updateUser(values, actions);
     }
     else {
-        createUser(values);
+        createUser(values, actions);
     }
 }
 
