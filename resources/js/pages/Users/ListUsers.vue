@@ -3,6 +3,9 @@ import axios from 'axios';
 import { ref, onMounted, reactive } from 'vue';
 import { Form, Field, useSetFieldError } from 'vee-validate';
 import * as yup from 'yup';
+import { useToastr } from '../../toastr.js';
+
+const toastr = useToastr();
 
 const users = ref([]);
 
@@ -10,6 +13,7 @@ const editing = ref(false);
 const formValues = ref({});
 
 const form = ref(null);
+const userIdToDelete = ref(null);
 
 
 const getUsers = () => {
@@ -41,6 +45,7 @@ const createUser = (values, { resetForm, setFieldError }) => {
             users.value.unshift(response.data);
             $('#userFormModal').modal('hide');
             resetForm();
+            toastr.success('User Created Successfull');
 
         })
 
@@ -76,6 +81,7 @@ const updateUser = (values, { setFieldError }) => {
             const index = users.value.findIndex(user => user.id === response.data.id);
             users.value[index] = response.data;
             $('#userFormModal').modal('hide');
+            toastr.success('User Updated Successfull');
         })
         .catch((error) => {
             setFieldError('email', error.response.data.errors.email[0]);
@@ -93,8 +99,29 @@ const handleSubmit = (values, actions) => {
     }
 }
 
+const confirmUserDeletion = (user) => {
+    userIdToDelete.value = user.id;
+    $('#deleteUserModal').modal('show');
+}
+
+const deleteUser = () => {
+    axios.delete(`/api/users/${userIdToDelete.value}`)
+        .then(() => {
+            toastr.success("User deleted Successfully");
+            $('#deleteUserModal').modal('hide'); // Close the delete modal after successful deletion
+            users.value = users.value.filter(user => user.id !== userIdToDelete.value);
+        })
+        .catch((error) => {
+
+            console.error('Error deleting user:', error);
+            toastr.error("Error deleting user");
+        });
+}
+
+
 onMounted(() => {
     getUsers();
+
 });
 </script>
 
@@ -141,10 +168,12 @@ onMounted(() => {
                             <th scope="row">{{ user.id }}</th>
                             <td>{{ user.name }}</td>
                             <td>{{ user.email }}</td>
-                            <td>12 aug,2023</td>
+                            <td>{{ user.created_at }}</td>
                             <td></td>
                             <td>
                                 <a href="#" @click.prevent="editUser(user)"><i class="fa fa-edit"></i></a>
+                                <a href="#" @click.prevent="confirmUserDeletion(user)"><i
+                                        class="fa fa-trash text-danger ml-2"></i></a>
                             </td>
                         </tr>
 
@@ -203,6 +232,31 @@ onMounted(() => {
                         <button type="submit" class="btn btn-primary">Save</button>
                     </div>
                 </Form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">
+
+                        <span>Delete User</span>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h5>Are you sure to Delete this user ?</h5>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" @click.prevent="deleteUser" class="btn btn-danger">Delete</button>
+                </div>
+
             </div>
         </div>
     </div>
