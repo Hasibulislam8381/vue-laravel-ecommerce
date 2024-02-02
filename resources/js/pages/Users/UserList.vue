@@ -4,6 +4,7 @@ import { ref, onMounted, reactive } from 'vue';
 import { Form, Field, useSetFieldError } from 'vee-validate';
 import * as yup from 'yup';
 import { useToastr } from '../../toastr.js';
+import UserListItem from './UserListItem.vue';
 
 const toastr = useToastr();
 
@@ -165,19 +166,8 @@ onMounted(() => {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="user in users" :key="user.id">
-                            <th scope="row">{{ user.id }}</th>
-                            <td>{{ user.name }}</td>
-                            <td>{{ user.email }}</td>
-                            <td>{{ user.created_at }}</td>
-                            <td>{{ user.role }}</td>
-                            <td>
-                                <a href="#" @click.prevent="editUser(user)"><i class="fa fa-edit"></i></a>
-                                <a href="#" @click.prevent="confirmUserDeletion(user)"><i
-                                        class="fa fa-trash text-danger ml-2"></i></a>
-                            </td>
-                        </tr>
 
+                        <UserListItem v-for="user in users" :key="user.id" :user="user" :index="index" />
 
                     </tbody>
                 </table>
