@@ -1,135 +1,3 @@
-
-<template>
-    <div>
-        <div class="content-header">
-
-            <div class="container-fluid">
-                <div class="row mb-2">
-                    <div class="col-sm-6">
-                        <h1 class="m-0">Users</h1>
-                    </div>
-                    <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item active">Users</li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <div class="content">
-            <div class="container-fluid">
-                <div class="add_user_btn">
-                    <button @click="addUser" type="button" class="btn btn-primary">Add New
-                        User</button>
-                </div>
-                <table class="table">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th scope="col">Id</th>
-                            <th scope="col">Name</th>
-                            <th scope="col">Email</th>
-                            <th scope="col">Register Date</th>
-                            <th scope="col">Role</th>
-                            <th scope="col">Options</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-
-                        <!-- In your main component template -->
-
-                        <UserListItem v-for="(user, index) in users" :key="user.id" :user="user" :index="index" />
-
-
-
-                    </tbody>
-                </table>
-
-
-
-            </div>
-        </div>
-    </div>
-
-    <!-- Button trigger modal -->
-
-
-    <!-- Modal -->
-    <div class="modal fade" id="userFormModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">
-                        <span v-if="editing">Edit User</span>
-                        <span v-else>Add new User</span>
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <Form ref="form" @submit="handleSubmit" :validation-schema="editing ? editschema : schema"
-                    v-slot="{ errors }">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="name">Name</label>
-                            <Field name="name" v-model="formValues.name" type="name" :class="{ 'is-invalid': errors.name }"
-                                class="form-control" placeholder="Enter Full Name" />
-                            <span class="invalid-feedback">{{ errors.name }}</span>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <Field name="email" v-model="formValues.email" type="email"
-                                :class="{ 'is-invalid': errors.email }" class="form-control"
-                                placeholder="Enter User Email" />
-                            <span class="invalid-feedback">{{ errors.email }}</span>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <Field name="password" type="password" :class="{ 'is-invalid': errors.password }"
-                                class="form-control" placeholder="Enter Password" />
-                            <span class="invalid-feedback">{{ errors.password }}</span>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
-                    </div>
-                </Form>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">
-
-                        <span>Delete User</span>
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <h5>Are you sure to Delete this user ?</h5>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" @click.prevent="deleteUser" class="btn btn-danger">Delete</button>
-                </div>
-
-            </div>
-        </div>
-    </div>
-</template>
-
-
-
 <script setup>
 import axios from 'axios';
 import { ref, onMounted, reactive } from 'vue';
@@ -146,7 +14,7 @@ const editing = ref(false);
 const formValues = ref({});
 
 const form = ref(null);
-const userIdToDelete = ref(null);
+
 
 
 const getUsers = () => {
@@ -233,23 +101,8 @@ const handleSubmit = (values, actions) => {
     }
 }
 
-const confirmUserDeletion = (user) => {
-    userIdToDelete.value = user.id;
-    $('#deleteUserModal').modal('show');
-}
-
-const deleteUser = () => {
-    axios.delete(`/api/users/${userIdToDelete.value}`)
-        .then(() => {
-            toastr.success("User deleted Successfully");
-            $('#deleteUserModal').modal('hide'); // Close the delete modal after successful deletion
-            users.value = users.value.filter(user => user.id !== userIdToDelete.value);
-        })
-        .catch((error) => {
-
-            console.error('Error deleting user:', error);
-            toastr.error("Error deleting user");
-        });
+const userDeleted = (userId) => {
+    users.value = users.value.filter(user => user.id !== userId);
 }
 
 
@@ -258,6 +111,114 @@ onMounted(() => {
 
 });
 </script>
+<template>
+    <div>
+        <div class="content-header">
+
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Users</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item active">Users</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="content">
+            <div class="container-fluid">
+                <div class="add_user_btn">
+                    <button @click="addUser" type="button" class="btn btn-primary">Add New
+                        User</button>
+                </div>
+                <table class="table">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Id</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Register Date</th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Options</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <!-- In your main component template -->
+
+                        <UserListItem v-for="(user, index) in users" :key="user.id" :user="user" :index="index"
+                            @user-deleted="userDeleted" />
+
+
+
+                    </tbody>
+                </table>
+
+
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Button trigger modal -->
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="userFormModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">
+                        <span v-if="editing">Edit User</span>
+                        <span v-else>Add new User</span>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <Form ref="form" @submit="handleSubmit" :validation-schema="editing ? editschema : schema"
+                    v-slot="{ errors }">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <Field name="name" v-model="formValues.name" type="name" :class="{ 'is-invalid': errors.name }"
+                                class="form-control" placeholder="Enter Full Name" />
+                            <span class="invalid-feedback">{{ errors.name }}</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <Field name="email" v-model="formValues.email" type="email"
+                                :class="{ 'is-invalid': errors.email }" class="form-control"
+                                placeholder="Enter User Email" />
+                            <span class="invalid-feedback">{{ errors.email }}</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <Field name="password" type="password" :class="{ 'is-invalid': errors.password }"
+                                class="form-control" placeholder="Enter Password" />
+                            <span class="invalid-feedback">{{ errors.password }}</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </Form>
+            </div>
+        </div>
+    </div>
+</template>
+
+
+
+
 
 <style>
 .add_user_btn {
