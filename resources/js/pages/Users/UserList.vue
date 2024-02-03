@@ -119,6 +119,27 @@ const deleteUser = () => {
         });
 }
 
+const roles = ref([
+    {
+        name: 'ADMIN',
+        value: 1
+    },
+    {
+        name: 'USER',
+        value: 2
+    }
+])
+
+const changeRole = (user, role) => {
+    axios.patch(`/api/users/${user.id}/change-role`, {
+        role: role,
+    })
+        .then(() => {
+            toastr.success('Role Changed Successfully');
+        })
+}
+
+const searchQuery = ref(null);
 
 onMounted(() => {
     getUsers();
@@ -150,8 +171,20 @@ onMounted(() => {
         <div class="content">
             <div class="container-fluid">
                 <div class="add_user_btn">
-                    <button @click="addUser" type="button" class="btn btn-primary">Add New
-                        User</button>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <button @click="addUser" type="button" class="btn btn-primary">Add New
+                                User</button>
+                        </div>
+                        <div class="col-md-8 d-flex">
+                            <input type="text" class="form-control" placeholder="Search..">
+                            <div>
+                                <button class="btn btn-primary ml-3">Submit</button>
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
                 <table class="table">
                     <thead class="thead-dark">
@@ -170,7 +203,12 @@ onMounted(() => {
                             <td>{{ user.name }}</td>
                             <td>{{ user.email }}</td>
                             <td>{{ user.created_at }}</td>
-                            <td>{{ user.role }}</td>
+                            <td>
+                                <select class="form-control" @change="changeRole(user, $event.target.value)">
+                                    <option v-for="role in roles" :value="role.value" :selected="user.role === role.name">{{
+                                        role.name }}</option>
+                                </select>
+                            </td>
                             <td>
                                 <a href="#" @click.prevent="editUser(user)"><i class="fa fa-edit"></i></a>
                                 <a href="#" @click.prevent="confirmUserDeletion(user)"><i
