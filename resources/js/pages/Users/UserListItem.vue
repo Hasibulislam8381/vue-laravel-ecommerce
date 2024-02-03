@@ -1,42 +1,34 @@
-
 <script setup>
-
-
-//
-import { ref } from "vue";
+import { ref, defineProps, defineEmits } from 'vue';
+import axios from 'axios';
 import { useToastr } from '../../toastr.js';
+
 const toastr = useToastr();
-defineProps({
-    user: Object,
-    index: Number
-})
+const { user, index } = defineProps(['user', 'index']);
 const emit = defineEmits(['userDeleted']);
-
 const userIdToDelete = ref(null);
-// TO Dlete user
-const confirmUserDeletion = (user) => {
-    userIdToDelete.value = user.id;
 
+// TO Delete user
+const confirmUserDeletion = () => {
     $('#deleteUserModal').modal('show');
 }
 
-const deleteUser = () => {
-
-    axios.delete(`/api/users/${userIdToDelete.value}`)
-        .then(() => {
+const deleteUser = async (userToDelete) => {
+    try {
+        if (userToDelete.id !== null) {
+            await axios.delete(`/api/users/${userToDelete.id}`);
             toastr.success("User deleted Successfully");
-            $('#deleteUserModal').modal('hide'); // Close the delete modal after successful deletion
-
-            // emit('userDeleted', userIdToDelete.value)
-
-        })
-        .catch((error) => {
-
-            console.error('Error deleting user:', error);
-            toastr.error("Error deleting user");
-        });
+            $('#deleteUserModal').modal('hide');
+            emit('userDeleted', userToDelete.id);
+        } else {
+            console.error('User ID is null or invalid');
+            // Handle the case where the user ID is null or invalid (optional)
+        }
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        toastr.error("Error deleting user");
+    }
 }
-
 </script>
 
 <template>
@@ -58,7 +50,6 @@ const deleteUser = () => {
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">
-
                         <span>Delete User</span>
                     </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -68,12 +59,10 @@ const deleteUser = () => {
                 <div class="modal-body">
                     <h5>Are you sure to Delete this user ?</h5>
                 </div>
-
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" @click.prevent="deleteUser" class="btn btn-danger">Delete</button>
+                    <button type="button" @click.prevent="() => deleteUser(user)" class="btn btn-danger">Delete</button>
                 </div>
-
             </div>
         </div>
     </div>
