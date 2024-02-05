@@ -1,9 +1,10 @@
 <script setup>
 import axios from 'axios';
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, watch } from 'vue';
 import { Form, Field, useSetFieldError } from 'vee-validate';
 import * as yup from 'yup';
 import { useToastr } from '../../toastr.js';
+import { debounce } from 'lodash';
 
 const toastr = useToastr();
 
@@ -141,6 +142,24 @@ const changeRole = (user, role) => {
 
 const searchQuery = ref(null);
 
+const search = () => {
+    axios.get('/api/users/search', {
+        params: {
+            query: searchQuery.value
+        }
+    })
+        .then(response => {
+            users.value = response.data;
+        })
+        .catch(error => {
+            console.log(error);
+        })
+}
+
+watch(searchQuery, debounce(() => {
+    search();
+}), 300)
+
 onMounted(() => {
     getUsers();
 
@@ -177,9 +196,9 @@ onMounted(() => {
                                 User</button>
                         </div>
                         <div class="col-md-8 d-flex">
-                            <input type="text" class="form-control" placeholder="Search..">
+                            <input type="text" v-model="searchQuery" class="form-control" placeholder="Search..">
                             <div>
-                                <button class="btn btn-primary ml-3">Submit</button>
+                                <button @click.prevent="search" class="btn btn-primary ml-3">Submit</button>
                             </div>
                         </div>
 
@@ -197,7 +216,7 @@ onMounted(() => {
                             <th scope="col">Options</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody v-if="users.length > 0">
                         <tr v-for="user in users" :key="user.id">
                             <th scope="row">{{ user.id }}</th>
                             <td>{{ user.name }}</td>
@@ -217,6 +236,11 @@ onMounted(() => {
                         </tr>
 
 
+                    </tbody>
+                    <tbody v-else>
+                        <tr>
+                            <td colspan="6" class="text-center">No results found..</td>
+                        </tr>
                     </tbody>
                 </table>
 
