@@ -4,7 +4,7 @@ import { ref, onMounted, reactive, watch } from 'vue';
 import { Form, Field, useSetFieldError } from 'vee-validate';
 import * as yup from 'yup';
 import { useToastr } from '../../toastr.js';
-import { debounce } from 'lodash';
+import {debounce} from 'lodash';
 
 const toastr = useToastr();
 
@@ -158,7 +158,7 @@ const search = () => {
 
 watch(searchQuery, debounce(() => {
     search();
-}), 300)
+}, 300));
 
 onMounted(() => {
     getUsers();
