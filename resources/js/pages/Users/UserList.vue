@@ -9,7 +9,7 @@ import { Bootstrap4Pagination } from 'laravel-vue-pagination';
 
 const toastr = useToastr();
 
-const users = ref([]);
+const users = ref({data:[]});
 
 const editing = ref(false);
 const formValues = ref({});
@@ -243,16 +243,14 @@ onMounted(() => {
                             <td colspan="6" class="text-center">No results found..</td>
                         </tr>
                     </tbody>
+                    
                 </table>
-                <Bootstrap4Pagination
-        :data="users.data"
-        @pagination-change-page="getUsers"
-    />
-    
+               
 
 
             </div>
         </div>
+        <Bootstrap4Pagination :data="users" @pagination-change-page="getUsers"/>
     </div>
 
     <!-- Button trigger modal -->

@@ -16,6 +16,7 @@ class UserController extends Controller
             'email'=>$user->email,
             'role'=>$user->role,
             'created_at'=>$user->created_at->format(config('app.date_format')),
+            
 
         ];
        });
@@ -65,7 +66,7 @@ class UserController extends Controller
     public function search(){
         $seachQuery = request('query');
 
-        $users = User::where('name','like',"%{$seachQuery}%")->get();
+        $users = User::where('name','like',"%{$seachQuery}%")->paginate(2);
 
         return response()->json($users);
     }
