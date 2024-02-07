@@ -5,6 +5,7 @@ import { Form, Field, useSetFieldError } from 'vee-validate';
 import * as yup from 'yup';
 import { useToastr } from '../../toastr.js';
 import {debounce} from 'lodash';
+import { Bootstrap4Pagination } from 'laravel-vue-pagination';
 
 const toastr = useToastr();
 
@@ -17,8 +18,8 @@ const form = ref(null);
 const userIdToDelete = ref(null);
 
 
-const getUsers = () => {
-    axios.get('/api/users')
+const getUsers = (page=1) => {
+    axios.get(`/api/users?page=${page}`)
         .then((response) => {
             users.value = response.data;
 
@@ -243,7 +244,11 @@ onMounted(() => {
                         </tr>
                     </tbody>
                 </table>
-
+                <Bootstrap4Pagination
+        :data="users.data"
+        @pagination-change-page="getUsers"
+    />
+    
 
 
             </div>

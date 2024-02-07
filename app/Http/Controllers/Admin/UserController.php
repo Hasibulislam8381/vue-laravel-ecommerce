@@ -9,7 +9,7 @@ class UserController extends Controller
 {
     //
     public function index(){
-       $users= User::Latest()->get()->map(function($user){
+       $users= User::Latest()->paginate(2)->map(function($user){
         return [
             'id'=>$user->id,
             'name'=>$user->name,
