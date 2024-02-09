@@ -4,6 +4,7 @@ import { ref, onMounted, reactive, watch } from "vue";
 import { Form, Field, useSetFieldError } from "vee-validate";
 import * as yup from "yup";
 import { useToastr } from "../../toastr.js";
+import { formatDate } from "../../helper.js";
 import { debounce } from "lodash";
 import { Bootstrap4Pagination } from "laravel-vue-pagination";
 
@@ -17,8 +18,8 @@ const formValues = ref({});
 const form = ref(null);
 const userIdToDelete = ref(null);
 
-const getUsers = () => {
-    axios.get(`/api/users`).then((response) => {
+const getUsers = (page = 1) => {
+    axios.get(`/api/users?page=${page}`).then((response) => {
         users.value = response.data;
     });
 };
@@ -174,12 +175,21 @@ const bulkDelete = () => {
             },
         })
         .then((response) => {
-            users.value = users.value.filter(
+            users.value.data = users.value.data.filter(
                 (user) => !selectedUsers.value.includes(user.id)
             );
             selectedUsers.value = [];
+            selectAll.value = false;
             toastr.success(response.data.message);
         });
+};
+const selectAll = ref(false);
+const selectAllUsers = () => {
+    if (selectAll.value) {
+        selectedUsers.value = users.value.data.map((user) => user.id);
+    } else {
+        selectedUsers.value = [];
+    }
 };
 
 watch(
@@ -258,7 +268,13 @@ onMounted(() => {
                 <table class="table">
                     <thead class="thead-dark">
                         <tr>
-                            <th><input type="checkbox" /></th>
+                            <th>
+                                <input
+                                    type="checkbox"
+                                    v-model="selectAll"
+                                    @change="selectAllUsers"
+                                />
+                            </th>
                             <th scope="col">Id</th>
                             <th scope="col">Name</th>
                             <th scope="col">Email</th>
@@ -267,11 +283,12 @@ onMounted(() => {
                             <th scope="col">Options</th>
                         </tr>
                     </thead>
-                    <tbody v-if="users.length > 0">
-                        <tr v-for="user in users" :key="user.id">
+                    <tbody v-if="users.data.length > 0">
+                        <tr v-for="user in users.data" :key="user.id">
                             <th>
                                 <input
                                     type="checkbox"
+                                    :checked="selectAll"
                                     @change="
                                         ($event) =>
                                             toggleSelection($event, user)
@@ -283,7 +300,7 @@ onMounted(() => {
                             <th scope="row">{{ user.id }}</th>
                             <td>{{ user.name }}</td>
                             <td>{{ user.email }}</td>
-                            <td>{{ user.created_at }}</td>
+                            <td>{{ formatDate(user.created_at) }}</td>
                             <td>
                                 <select
                                     class="form-control"
