@@ -156,10 +156,30 @@ const search = () => {
 const selectedUsers = ref([]);
 
 const toggleSelection = (event, user) => {
-    console.log(user.id);
-    selectedUsers.value.push(user.id);
+    const index = selectedUsers.value.indexOf(user.id);
+    if (index === -1) {
+        selectedUsers.value.push(user.id);
+    } else {
+        selectedUsers.value.splice(index, 1);
+    }
 
     console.log(selectedUsers.value);
+};
+
+const bulkDelete = () => {
+    axios
+        .delete("/api/users", {
+            data: {
+                ids: selectedUsers.value,
+            },
+        })
+        .then((response) => {
+            users.value = users.value.filter(
+                (user) => !selectedUsers.value.includes(user.id)
+            );
+            selectedUsers.value = [];
+            toastr.success(response.data.message);
+        });
 };
 
 watch(
@@ -208,6 +228,7 @@ onMounted(() => {
                                     Add New User
                                 </button>
                                 <button
+                                    v-if="selectedUsers.length > 0"
                                     @click="bulkDelete"
                                     type="button"
                                     class="ml-2 btn btn-danger"
