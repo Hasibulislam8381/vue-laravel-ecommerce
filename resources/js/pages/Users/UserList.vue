@@ -21,6 +21,8 @@ const userIdToDelete = ref(null);
 const getUsers = (page = 1) => {
     axios.get(`/api/users?page=${page}`).then((response) => {
         users.value = response.data;
+        selectedUsers.value = [];
+        selectAll.value = false;
     });
 };
 
@@ -41,7 +43,7 @@ const createUser = (values, { resetForm, setFieldError }) => {
     axios
         .post("/api/users", values)
         .then((response) => {
-            users.value.unshift(response.data);
+            users.value.data.unshift(response.data);
             $("#userFormModal").modal("hide");
             resetForm();
             toastr.success("User Created Successfull");
@@ -228,13 +230,14 @@ onMounted(() => {
             <div class="container-fluid">
                 <div class="add_user_btn">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-9">
                             <div>
                                 <button
                                     @click="addUser"
                                     type="button"
                                     class="btn btn-primary"
                                 >
+                                    <i class="fa fa-plus-circle mr-1"></i>
                                     Add New User
                                 </button>
                                 <button
@@ -243,11 +246,16 @@ onMounted(() => {
                                     type="button"
                                     class="ml-2 btn btn-danger"
                                 >
+                                    <i class="fa fa-trash mr-1"></i>
                                     Delete all User
                                 </button>
+                                <span class="ml-2 text-bold"
+                                    >{{ selectedUsers.length }} users
+                                    selected</span
+                                >
                             </div>
                         </div>
-                        <div class="col-md-8 d-flex">
+                        <div class="col-md-3 d-flex">
                             <input
                                 type="text"
                                 v-model="searchQuery"
