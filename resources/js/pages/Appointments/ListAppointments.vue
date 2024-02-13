@@ -3,9 +3,17 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 
 const appointments = ref([]);
+const appointmentStatus = { scheduled: 1, confirmed: 2, cancelled: "3" };
 
-const getAppointments = () => {
-    axios("/api/appointments").then((response) => {
+const params = {};
+const getAppointments = (status) => {
+    if (params.status) {
+        delete params.status;
+    }
+    if (status) {
+        params.status = status;
+    }
+    axios.get("/api/appointments", { params: params }).then((response) => {
         appointments.value = response.data;
     });
 };
@@ -50,24 +58,58 @@ onMounted(() => {
                                 </a>
                             </div>
                             <div class="btn-group">
-                                <button type="button" class="btn btn-secondary">
+                                <button
+                                    @click="getAppointments()"
+                                    type="button"
+                                    class="btn btn-secondary"
+                                >
                                     <span class="mr-1">All</span>
                                     <span class="badge badge-pill badge-info"
-                                        >1</span
+                                        >0</span
                                     >
                                 </button>
 
                                 <button type="button" class="btn btn-default">
-                                    <span class="mr-1">Scheduled</span>
+                                    <span
+                                        @click="
+                                            getAppointments(
+                                                appointmentStatus.scheduled
+                                            )
+                                        "
+                                        class="mr-1"
+                                        >Scheduled</span
+                                    >
+                                    <span class="badge badge-pill badge-primary"
+                                        >0</span
+                                    >
+                                </button>
+                                <button type="button" class="btn btn-default">
+                                    <span
+                                        @click="
+                                            getAppointments(
+                                                appointmentStatus.confirmed
+                                            )
+                                        "
+                                        class="mr-1"
+                                        >Confirmed</span
+                                    >
                                     <span class="badge badge-pill badge-primary"
                                         >0</span
                                     >
                                 </button>
 
                                 <button type="button" class="btn btn-default">
-                                    <span class="mr-1">Closed</span>
-                                    <span class="badge badge-pill badge-success"
-                                        >1</span
+                                    <span
+                                        @click="
+                                            getAppointments(
+                                                appointmentStatus.cancelled
+                                            )
+                                        "
+                                        class="mr-1"
+                                        >Cancelled</span
+                                    >
+                                    <span class="badge badge-pill badge-danger"
+                                        >0</span
                                     >
                                 </button>
                             </div>
