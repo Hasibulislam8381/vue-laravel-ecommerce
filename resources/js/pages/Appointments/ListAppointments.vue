@@ -1,3 +1,20 @@
+<script setup>
+import { ref, onMounted } from "vue";
+import axios from "axios";
+
+const appointments = ref();
+
+const getAppointments = () => {
+    axios("/api/appointments").then((response) => {
+        appointments.value = response.data;
+    });
+};
+
+onMounted(() => {
+    getAppointments();
+});
+</script>
+
 <template>
     <div>
         <div class="content-header">
