@@ -3,7 +3,14 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 
 const appointments = ref([]);
-const appointmentStatus = { scheduled: 1, confirmed: 2, cancelled: "3" };
+// const appointmentStatus = { scheduled: 1, confirmed: 2, cancelled: "3" };
+const appointmentStatus = ref([]);
+
+const getAppointmentStatus = () => {
+    axios.get("/api/appointment-status").then((response) => {
+        appointmentStatus.value = response.data;
+    });
+};
 
 const params = {};
 const getAppointments = (status) => {
@@ -20,6 +27,7 @@ const getAppointments = (status) => {
 
 onMounted(() => {
     getAppointments();
+    getAppointmentStatus();
 });
 </script>
 
@@ -83,7 +91,7 @@ onMounted(() => {
                                         >0</span
                                     >
                                 </button>
-                                <button type="button" class="btn btn-default">
+                                <!-- <button type="button" class="btn btn-default">
                                     <span
                                         @click="
                                             getAppointments(
@@ -93,7 +101,7 @@ onMounted(() => {
                                         class="mr-1"
                                         >Confirmed</span
                                     >
-                                    <span class="badge badge-pill badge-primary"
+                                    <span class="badge badge-pill badge-success"
                                         >0</span
                                     >
                                 </button>
@@ -111,7 +119,7 @@ onMounted(() => {
                                     <span class="badge badge-pill badge-danger"
                                         >0</span
                                     >
-                                </button>
+                                </button> -->
                             </div>
                         </div>
                         <div class="card">
