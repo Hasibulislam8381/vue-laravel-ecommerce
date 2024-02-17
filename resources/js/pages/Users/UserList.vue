@@ -77,18 +77,19 @@ const updateUser = (values, { setFieldError }) => {
     axios
         .put("/api/users/" + formValues.value.id, values)
         .then((response) => {
-            const index = users.value.findIndex(
+            const index = users.value.data.findIndex(
                 (user) => user.id === response.data.id
             );
-            users.value[index] = response.data;
+            users.value.data[index] = response.data;
             $("#userFormModal").modal("hide");
-            toastr.success("User Updated Successfull");
+            toastr.success("User Updated Successfully");
         })
         .catch((error) => {
             setFieldError("email", error.response.data.errors.email[0]);
-            console.log(error);
+            console.error(error);
         });
 };
+
 const handleSubmit = (values, actions) => {
     if (editing.value) {
         updateUser(values, actions);
@@ -108,7 +109,7 @@ const deleteUser = () => {
         .then(() => {
             toastr.success("User deleted Successfully");
             $("#deleteUserModal").modal("hide"); // Close the delete modal after successful deletion
-            users.value = users.value.filter(
+            users.value.data = users.value.data.filter(
                 (user) => user.id !== userIdToDelete.value
             );
         })
