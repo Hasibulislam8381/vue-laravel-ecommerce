@@ -26,4 +26,23 @@ class AppointmentStatusController extends Controller
 
 
     }
+
+    public function  store(){
+      
+      request()->validate([
+        'title'=>'required',
+        'description'=>'required'
+      ]);
+
+        Appointment::create([
+          'title'=>request('title'),
+          'client_id'=>1,
+          'start_time'=>now(),
+          'end_time'=>now(),
+          'description'=>request('description'),
+          'status'=>AppointmentStatus::SCHEDULED
+        ]);
+
+        return response()->json(['message'=>'success']);
+    }
 }

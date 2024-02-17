@@ -1,4 +1,33 @@
-<script setup></script>
+<script setup>
+import axios from "axios";
+import { reactive } from "vue";
+import { useRouter } from "vue-router";
+import { useToastr } from "../../toastr";
+import { Form } from "vee-validate";
+
+const router = useRouter();
+const toastr = useToastr();
+
+const form = reactive({
+    title: "",
+    client_id: "",
+    start_date: "",
+    start_time: "",
+    description: "",
+});
+
+const handleSubmit = (values, actions) => {
+    axios
+        .post("/api/appointments/create", form)
+        .then((response) => {
+            router.push("/admin/appointments");
+            toastr.success("Appointment Created Successfully");
+        })
+        .catch((error) => {
+            actions.setErrors(error.response.data.errors);
+        });
+};
+</script>
 
 <template>
     <div class="content-header">
@@ -32,17 +61,24 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
-                            <form>
+                            <Form @submit="handleSubmit" v-slot="{ errors }">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="title">Title</label>
                                             <input
+                                                v-model="form.title"
                                                 type="text"
                                                 class="form-control"
+                                                :class="{
+                                                    'is-invalid': errors.title,
+                                                }"
                                                 id="title"
                                                 placeholder="Enter Title"
                                             />
+                                            <span class="invalid-feedback">{{
+                                                errors.title
+                                            }}</span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -89,16 +125,23 @@
                                 <div class="form-group">
                                     <label for="description">Description</label>
                                     <textarea
+                                        v-model="form.description"
                                         class="form-control"
+                                        :class="{
+                                            'is-invalid': errors.description,
+                                        }"
                                         id="description"
                                         rows="3"
                                         placeholder="Enter Description"
                                     ></textarea>
+                                    <span class="invalid-feedback">{{
+                                        errors.description
+                                    }}</span>
                                 </div>
                                 <button type="submit" class="btn btn-primary">
                                     Submit
                                 </button>
-                            </form>
+                            </Form>
                         </div>
                     </div>
                 </div>
