@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AppointmentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AppointmentStatusController;
+use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\ApplicationController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +40,13 @@ Route::get('/api/appointments',[AppointmentController::class,'index']);
 
 Route::get('/api/appointment-status',[AppointmentStatusController::class,'getStatusWithCount']);
 Route::post('/api/appointments/create',[AppointmentStatusController::class,'store']);
+
+
+// Client controller route
+Route::get('/api/client',[ClientController::class,'index']);
+
+
+// 
 
 Route::get('{view}',ApplicationController::class)->where('view',('.*'));
 
