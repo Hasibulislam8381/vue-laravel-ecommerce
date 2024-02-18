@@ -1,9 +1,11 @@
 <script setup>
 import axios from "axios";
-import { reactive } from "vue";
+import { reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useToastr } from "../../toastr";
 import { Form } from "vee-validate";
+import flatpickr from "flatpickr";
+import "flatpickr/dist/themes/light.css";
 
 const router = useRouter();
 const toastr = useToastr();
@@ -27,6 +29,13 @@ const handleSubmit = (values, actions) => {
             actions.setErrors(error.response.data.errors);
         });
 };
+
+onMounted(() => {
+    flatpickr(".flatpickr", {
+        enableTime: true,
+        dateFormat: "Y-m-d h:i K",
+    });
+});
 </script>
 
 <template>
@@ -99,24 +108,20 @@ const handleSubmit = (values, actions) => {
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="date"
-                                                >Appointment Date</label
-                                            >
+                                            <label for="date">Start Time</label>
                                             <input
                                                 type="date"
-                                                class="form-control"
+                                                class="form-control flatpickr"
                                                 id="date"
                                             />
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="time"
-                                                >Appointment Time</label
-                                            >
+                                            <label for="time">End Time</label>
                                             <input
                                                 type="time"
-                                                class="form-control"
+                                                class="form-control flatpickr"
                                                 id="time"
                                             />
                                         </div>
