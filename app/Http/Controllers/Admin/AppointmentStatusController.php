@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class AppointmentStatusController extends Controller
 {
-    //
+  
 
     public function getStatusWithCount(){
 
@@ -23,7 +23,7 @@ class AppointmentStatusController extends Controller
             ];
          });
 
-
+// dfjslflds
 
     }
 
