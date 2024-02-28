@@ -54,4 +54,10 @@ class AppointmentStatusController extends Controller
 
         return response()->json(['message'=>'success']);
     }
+
+    public function edit(Appointment $appointment){
+
+      return $appointment;
+
+    }
 }

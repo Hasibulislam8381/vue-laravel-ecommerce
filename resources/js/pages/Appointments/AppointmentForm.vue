@@ -1,13 +1,14 @@
 <script setup>
 import axios from "axios";
 import { reactive, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useToastr } from "../../toastr";
 import { Form } from "vee-validate";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/themes/light.css";
 
 const router = useRouter();
+const route = useRoute();
 const toastr = useToastr();
 
 const form = reactive({
@@ -36,7 +37,21 @@ const getClient = () => {
     });
 };
 
+const getAppointment = () => {
+    axios.get(`/api/appointments/${route.params.id}/edit`).then(({ data }) => {
+        form.title = data.title;
+        form.client_id = data.client_id;
+        form.start_time = data.formatted_start_time;
+    });
+};
+
+const editMode = ref(false);
+
 onMounted(() => {
+    if (route.name === "admin.appointments.edit") {
+        editMode.value = true;
+        getAppointment();
+    }
     flatpickr(".flatpickr", {
         enableTime: true,
         dateFormat: "Y-m-d h:i K",
@@ -50,7 +65,11 @@ onMounted(() => {
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0">Create Appointment</h1>
+                    <h1 class="m-0">
+                        <span v-if="editMode">Edit</span>
+                        <span v-else>Create</span>
+                        Appointment
+                    </h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
@@ -64,7 +83,10 @@ onMounted(() => {
                                 >Appointments</router-link
                             >
                         </li>
-                        <li class="breadcrumb-item active">Create</li>
+                        <li class="breadcrumb-item active">
+                            <span v-if="editMode">Edit</span>
+                            <span v-else>Create</span>
+                        </li>
                     </ol>
                 </div>
             </div>
