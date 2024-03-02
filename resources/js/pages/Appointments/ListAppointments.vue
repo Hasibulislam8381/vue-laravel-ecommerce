@@ -184,11 +184,13 @@ onMounted(() => {
                                                 >
                                             </td>
                                             <td>
-                                                <a href="">
+                                                <router-link
+                                                    :to="`/admin/appointments/${appointment.id}/edit`"
+                                                >
                                                     <i
                                                         class="fa fa-edit mr-2"
                                                     ></i>
-                                                </a>
+                                                </router-link>
 
                                                 <a href="">
                                                     <i

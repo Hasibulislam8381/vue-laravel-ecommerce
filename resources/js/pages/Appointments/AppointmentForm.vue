@@ -40,7 +40,15 @@ const createAppointment = (values, actions) => {
 };
 
 const editAppointment = (values, actions) => {
-    alert("Updated");
+    axios
+        .put(`/api/appointments/${route.params.id}/edit`, form)
+        .then((response) => {
+            router.push("/admin/appointments");
+            toastr.success("Appointment Updated Successfully");
+        })
+        .catch((error) => {
+            actions.setErrors(error.response.data.errors);
+        });
 };
 
 const clients = ref();
