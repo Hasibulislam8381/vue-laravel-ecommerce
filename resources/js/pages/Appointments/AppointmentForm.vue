@@ -20,6 +20,14 @@ const form = reactive({
 });
 
 const handleSubmit = (values, actions) => {
+    if (editMode.value) {
+        editAppointment(values, actions);
+    } else {
+        createAppointment(values, actions);
+    }
+};
+
+const createAppointment = (values, actions) => {
     axios
         .post("/api/appointments/create", form)
         .then((response) => {
@@ -30,6 +38,11 @@ const handleSubmit = (values, actions) => {
             actions.setErrors(error.response.data.errors);
         });
 };
+
+const editAppointment = (values, actions) => {
+    alert("Updated");
+};
+
 const clients = ref();
 const getClient = () => {
     axios.get("/api/client").then((response) => {
@@ -41,7 +54,20 @@ const getAppointment = () => {
     axios.get(`/api/appointments/${route.params.id}/edit`).then(({ data }) => {
         form.title = data.title;
         form.client_id = data.client_id;
-        form.start_time = data.formatted_start_time;
+        form.start_time = data.start_time; // Corrected attribute name
+        form.end_time = data.end_time; // Corrected attribute name
+        form.description = data.description;
+
+        flatpickr(".startdate", {
+            enableTime: true,
+            dateFormat: "d-m-Y H:i",
+            defaultDate: new Date(form.start_time),
+        });
+        flatpickr(".endDate", {
+            enableTime: true,
+            dateFormat: "d-m-Y H:i",
+            defaultDate: new Date(form.end_time),
+        });
     });
 };
 
@@ -157,7 +183,7 @@ onMounted(() => {
                                             <input
                                                 v-model="form.start_time"
                                                 type="text"
-                                                class="form-control flatpickr"
+                                                class="form-control flatpickr startdate"
                                                 :class="{
                                                     'is-invalid':
                                                         errors.start_time,
@@ -176,8 +202,7 @@ onMounted(() => {
                                             >
                                             <input
                                                 v-model="form.end_time"
-                                                type="text"
-                                                class="form-control flatpickr"
+                                                class="form-control flatpickr endDate"
                                                 :class="{
                                                     'is-invalid':
                                                         errors.end_time,
