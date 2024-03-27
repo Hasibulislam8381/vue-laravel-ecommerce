@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Enums\RoleType;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -24,6 +25,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'avatar'
     ];
 
     /**
@@ -46,10 +48,25 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    protected $appends = [
+        'formatted_created_at',
+    ];
+    
+    public function getFormattedCreatedAtAttribute(){
+        return $this->created_at->format(setting('date_format'));
+    }
+    
+    
+
 
     public function role():Attribute{
         return Attribute::make(
             get:fn($value)=>RoleType::from($value)->name,
+        );
+    }
+    public function avatar():Attribute{
+        return Attribute::make(
+            get:fn($value)=>asset(Storage::url($value)??'/no_img.png'),
         );
     }
 }

@@ -9,10 +9,17 @@ class UserController extends Controller
 {
     //
     public function index(){
-       $users= User::latest()->paginate(10);
+
+        $users = User::query()
+
+        ->when(request('query'),function($query,$searchQuery){
+            $query->where('name','like',"%{$searchQuery}%");
+        })
+        
+        ->latest()
+        ->paginate(setting('pagination_limit'));
+
        return $users;
-
-
     }
     public function store(){
      request()->validate([
@@ -53,13 +60,7 @@ class UserController extends Controller
 
       return response()->json(['success'=>true]);
     }
-    public function search(){
-        $seachQuery = request('query');
-
-        $users = User::where('name','like',"%{$seachQuery}%")->paginate(10);
-
-        return response()->json($users);
-    }
+  
     public function bulkDelete(){
     
         User::whereIn("id",request("ids"))->delete();

@@ -1,11 +1,17 @@
 <?php
 
 use App\Http\Controllers\Admin\AppointmentController;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AppointmentStatusController;
 use App\Http\Controllers\Admin\ClientController;
+use App\Http\Controllers\Admin\DashboardStatController;
+use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ApplicationController;
 use Illuminate\Support\Facades\Route;
+
+
+
 
 
 
@@ -27,9 +33,12 @@ Route::get('/', function () {
 //     return view('dashboard');
 // });
 
-Route::get('/api/users',[UserController::class,'index']);
+Route::middleware('auth')->group(function(){
+Route::get('/api/status/appointments',[DashboardStatController::class,'appointments']);
+Route::get('/api/status/users',[DashboardStatController::class,'users']);
+    Route::get('/api/users',[UserController::class,'index']);
 Route::post('/api/users',[UserController::class,'store']);
-Route::get('/api/users/search',[UserController::class,'search']);
+
 
 Route::patch('/api/users/{user}/change-role',[UserController::class,'changeRole']);
 Route::put('/api/users/{user}',[UserController::class,'update']);
@@ -42,13 +51,23 @@ Route::get('/api/appointment-status',[AppointmentStatusController::class,'getSta
 Route::post('/api/appointments/create',[AppointmentStatusController::class,'store']);
 Route::get('/api/appointments/{appointment}/edit',[AppointmentStatusController::class,'edit']);
 Route::put('/api/appointments/{appointment}/edit',[AppointmentStatusController::class,'update']);
+Route::delete('/api/appointments/{appointment}',[AppointmentStatusController::class,'destroy']);
 
+Route::get('/api/settings',[SettingController::class,'index']);
+Route::post('/api/settings',[SettingController::class,'update']);
 
 // Client controller route
 Route::get('/api/client',[ClientController::class,'index']);
+Route::get('/api/profile',[ProfileController::class,'index']);
+Route::put('/api/profile',[ProfileController::class,'update']);
+Route::post('/api/upload-profile-image',[ProfileController::class,'uploadImage']);
+Route::post('/api/change-user-password',[ProfileController::class,'changePassword']);
+
+});
+
 
 
 // 
 
-Route::get('{view}',ApplicationController::class)->where('view',('.*'));
+Route::get('{view}',ApplicationController::class)->where('view',('.*'))->middleware('auth');
 

@@ -1,6 +1,8 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
+import Swal from "sweetalert2";
+import Preloader from "../../components/Preloader.vue";
 
 const appointments = ref([]);
 // const appointmentStatus = { scheduled: 1, confirmed: 2, cancelled: "3" };
@@ -15,7 +17,11 @@ const getAppointmentStatus = () => {
 };
 
 const params = {};
+
+const loading = ref(false);
+
 const getAppointments = (status) => {
+    loading.value = true;
     selectedStatus.value = status;
 
     if (params.status) {
@@ -26,6 +32,7 @@ const getAppointments = (status) => {
     }
     axios.get("/api/appointments", { params: params }).then((response) => {
         appointments.value = response.data;
+        loading.value = false;
     });
 };
 const calculateTotal = computed(() => {
@@ -33,6 +40,43 @@ const calculateTotal = computed(() => {
         .map((status) => status.count)
         .reduce((acc, value) => acc + value, 0);
 });
+
+const updateAppointmentStatusCount = (id) => {
+    const deletedAppointmentStatus = appointments.value.data.find(
+        (appointment) => appointment.id === id
+    ).status.name;
+    const statusToUpdate = appointmentStatus.value.find(
+        (status) => status.name === deletedAppointmentStatus
+    );
+    // console.log(statusToUpdate);
+    statusToUpdate.count--;
+};
+
+const deleteAppointment = (id) => {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            axios.delete(`/api/appointments/${id}`).then((response) => {
+                updateAppointmentStatusCount(id);
+                (appointments.value.data = appointments.value.data.filter(
+                    (appointment) => appointment.id !== id
+                )),
+                    Swal.fire({
+                        title: "Deleted!",
+                        text: "Your file has been deleted.",
+                        icon: "success",
+                    });
+            });
+        }
+    });
+};
 
 onMounted(() => {
     getAppointments();
@@ -192,7 +236,14 @@ onMounted(() => {
                                                     ></i>
                                                 </router-link>
 
-                                                <a href="">
+                                                <a
+                                                    href="#"
+                                                    @click.prevent="
+                                                        deleteAppointment(
+                                                            appointment.id
+                                                        )
+                                                    "
+                                                >
                                                     <i
                                                         class="fa fa-trash text-danger"
                                                     ></i>
@@ -209,4 +260,6 @@ onMounted(() => {
         </div>
         <!-- Content Section -->
     </div>
+    <Preloader :loading="loading" />
 </template>
+<style></style>

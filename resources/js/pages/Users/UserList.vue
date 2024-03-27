@@ -7,6 +7,7 @@ import { useToastr } from "../../toastr.js";
 import { formatDate } from "../../helper.js";
 import { debounce } from "lodash";
 import { Bootstrap4Pagination } from "laravel-vue-pagination";
+import Preloader from "../../components/Preloader.vue";
 
 const toastr = useToastr();
 
@@ -18,12 +19,21 @@ const formValues = ref({});
 const form = ref(null);
 const userIdToDelete = ref(null);
 
+const loading = ref(false);
 const getUsers = (page = 1) => {
-    axios.get(`/api/users?page=${page}`).then((response) => {
-        users.value = response.data;
-        selectedUsers.value = [];
-        selectAll.value = false;
-    });
+    loading.value = true;
+    axios
+        .get(`/api/users?page=${page}`, {
+            params: {
+                query: searchQuery.value,
+            },
+        })
+        .then((response) => {
+            users.value = response.data;
+            selectedUsers.value = [];
+            selectAll.value = false;
+            loading.value = false;
+        });
 };
 
 const schema = yup.object({
@@ -142,21 +152,6 @@ const changeRole = (user, role) => {
 
 const searchQuery = ref(null);
 
-const search = () => {
-    axios
-        .get("/api/users/search", {
-            params: {
-                query: searchQuery.value,
-            },
-        })
-        .then((response) => {
-            users.value = response.data;
-        })
-        .catch((error) => {
-            console.log(error);
-        });
-};
-
 const selectedUsers = ref([]);
 
 const toggleSelection = (event, user) => {
@@ -198,7 +193,7 @@ const selectAllUsers = () => {
 watch(
     searchQuery,
     debounce(() => {
-        search();
+        getUsers();
     }, 300)
 );
 
@@ -309,7 +304,7 @@ onMounted(() => {
                             <th scope="row">{{ user.id }}</th>
                             <td>{{ user.name }}</td>
                             <td>{{ user.email }}</td>
-                            <td>{{ formatDate(user.created_at) }}</td>
+                            <td>{{ user.formatted_created_at }}</td>
                             <td>
                                 <select
                                     class="form-control"
@@ -492,6 +487,7 @@ onMounted(() => {
             </div>
         </div>
     </div>
+    <Preloader :loading="loading" />
 </template>
 <style>
 .add_user_btn {

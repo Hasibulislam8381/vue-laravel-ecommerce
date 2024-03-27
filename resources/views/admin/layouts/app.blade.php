@@ -17,7 +17,7 @@
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
 
             <ul class="navbar-nav">
-                <li class="nav-item">
+                <li class="nav-item" id="toggleMenuIcon">
                     <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i
                             class="fas fa-bars"></i></a>
                 </li>
@@ -168,11 +168,11 @@
 
                 <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                     <div class="image">
-                        <img src="https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg"
+                        <img src="{{ auth()->user()->avatar }}"
                             class="img-circle elevation-2" alt="User Image">
                     </div>
                     <div class="info">
-                        <a href="#" class="d-block">Alexander Pierce</a>
+                        <a href="#" class="d-block">{{ auth()->user()->name }}</a>
                     </div>
                 </div>
 
@@ -224,12 +224,15 @@
                             </router-link>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-sign-out-alt"></i>
-                                <p>
-                                    Logout
-                                </p>
-                            </a>
+                            <form method="POST" action="{{ route('logout') }}" class="nav-link">
+                                @csrf
+                                <a href="#" onclick="event.preventDefault(); this.closest('form').submit();">
+                                    <i class="nav-icon fas fa-sign-out-alt"></i>
+                                    <p>Logout</p>
+                                </a>
+                            </form>
+                            
+                          
                         </li>
                     </ul>
                 </nav>
@@ -335,12 +338,30 @@
                 Anything you want
             </div>
 
-            <strong>Copyright &copy; 2014-2021 <a href="https://adminlte.io">AdminLTE.io</a>.</strong> All rights
+            <strong>Copyright &copy; {{ date('Y') }} <a href="">{{ setting('app_name') }}</a>.</strong> All rights
             reserved.
         </footer>
     </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded',()=>{
+     const toggleMenuIcon = document.getElementById('toggleMenuIcon');
+     const body = document.querySelector('body');
 
+     toggleMenuIcon.addEventListener('click',()=>{
+if(body.classList.contains('sidebar-collapse')){
+    localStorage.setItem('sidebarState','expanded');
+}else{
+    localStorage.setItem('sidebarState','collapsed');
+}
+     });
+
+     const sidebarState = localStorage.getItem('sidebarState');
+     if(sidebarState==='collapsed'){
+        body.classList.add('sidebar-collapse');
+     }
+    });
+</script>
 
 </body>
 
